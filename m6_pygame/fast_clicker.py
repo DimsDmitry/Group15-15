@@ -1,4 +1,5 @@
 import pygame
+from random import randint
 
 pygame.init()
 
@@ -26,6 +27,9 @@ class Area:
         # обводка прямоугольника
         pygame.draw.rect(mw, frame_color, self.rect, thickness)
 
+    def collidepoint(self, x, y):
+        return self.rect.collidepoint(x, y)
+
 
 class Label(Area):
     def set_text(self, text, fsize=12, text_color=(0, 0, 0)):
@@ -37,9 +41,11 @@ class Label(Area):
         mw.blit(self.image, (self.rect.x+shift_x, self.rect.y+shift_y))
 
 
+RED = (255, 0, 0)
+GREEN = (0, 255, 51)
 YELLOW = (255, 255, 0)
 DARK_BLUE = (0, 0, 100)
-BLUE = (94, 94, 255)
+BLUE = (80, 80, 255)
 
 cards = []
 num_cards = 4
@@ -52,9 +58,37 @@ for i in range(num_cards):
     cards.append(new_card)
     x += 100
 
+wait = 0
+
 while True:
-    for card in cards:
-        card.draw(10, 30)
+    if wait == 0:
+        #переносим надпись:
+        wait = 20 #столько тиков надпись будет на одном месте
+        click = randint(1, num_cards)
+        for i in range(num_cards):
+            cards[i].color(YELLOW)
+            if (i + 1) == click:
+                cards[i].draw(10, 40)
+            else:
+                cards[i].fill()
+    else:
+        wait -= 1
+
+
+   #на каждом тике проверяем клик:
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            x, y = event.pos
+            for i in range(num_cards):
+                # ищем, в какую карту попал клик
+                if cards[i].collidepoint(x, y):
+                    # если клик попал в нужную карту - окрашиваем в зелёный, если нет - красный
+                    if i+1 == click:
+                        cards[i].color(GREEN)
+                    else:
+                        cards[i].color(RED)
+                    cards[i].fill()
+
 
     pygame.display.update()
     clock.tick(40)
