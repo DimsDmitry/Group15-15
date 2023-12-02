@@ -10,6 +10,7 @@ mw.fill(back)
 
 clock = pygame.time.Clock()
 
+
 # класс прямоугольник
 class Area:
     def __init__(self, x, y, width, height, color):
@@ -38,7 +39,7 @@ class Label(Area):
 
     def draw(self, shift_x=0, shift_y=0):
         self.fill()
-        mw.blit(self.image, (self.rect.x+shift_x, self.rect.y+shift_y))
+        mw.blit(self.image, (self.rect.x + shift_x, self.rect.y + shift_y))
 
 
 RED = (255, 0, 0)
@@ -62,8 +63,8 @@ wait = 0
 
 while True:
     if wait == 0:
-        #переносим надпись:
-        wait = 20 #столько тиков надпись будет на одном месте
+        # переносим надпись:
+        wait = 20  # столько тиков надпись будет на одном месте
         click = randint(1, num_cards)
         for i in range(num_cards):
             cards[i].color(YELLOW)
@@ -74,8 +75,7 @@ while True:
     else:
         wait -= 1
 
-
-   #на каждом тике проверяем клик:
+    # на каждом тике проверяем клик:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             x, y = event.pos
@@ -83,12 +83,11 @@ while True:
                 # ищем, в какую карту попал клик
                 if cards[i].collidepoint(x, y):
                     # если клик попал в нужную карту - окрашиваем в зелёный, если нет - красный
-                    if i+1 == click:
+                    if i + 1 == click:
                         cards[i].color(GREEN)
                     else:
                         cards[i].color(RED)
                     cards[i].fill()
-
 
     pygame.display.update()
     clock.tick(40)
