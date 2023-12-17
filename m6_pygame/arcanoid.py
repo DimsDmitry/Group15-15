@@ -63,6 +63,12 @@ for j in range(3):
 
 # флаг окончания игры
 game_over = False
+#флаги движения платформы
+move_right = False
+move_left = False
+#перемещение мяча
+dx = 3
+dy = 3
 
 # игровой цикл
 while not game_over:
@@ -72,6 +78,38 @@ while not game_over:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_over = True
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                move_left = True # нажата стрелка влево или вправо - поднимаем флаг движения
+            if event.key == pygame.K_RIGHT:
+                move_right = True
+
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:
+                move_left = False # отпущена стрелка влево или вправо - опускаем флаг движения
+            if event.key == pygame.K_RIGHT:
+                move_right = False
+
+    # движение платформы
+    if move_right:
+        platform.rect.x += 3
+    if move_left:
+        platform.rect.x -= 3
+
+    # придаём мячу постоянное ускорение по x и y
+    ball.rect.x += dx
+    ball.rect.y += dy
+
+    # если мяч коснулся платформы или стенок, меняем направление движения
+    if ball.rect.colliderect(platform.rect):
+        dy *= -1
+
+    if ball.rect.x > 450 or ball.rect.x < 0:
+        dx *= -1
+
+    if ball.rect.y < 0:
+        dy *= -1
 
     # отрисовываем всех монстров из списка
     for m in monsters:
