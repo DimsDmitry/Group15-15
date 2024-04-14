@@ -3,6 +3,25 @@ from PyQt5.QtWidgets import *
 from random import *
 
 
+class Question:
+    # класс для хранения вопроса
+    def __init__(self, question, right_answer, wrong1, wrong2, wrong3):
+        self.question = question
+        self.right_answer = right_answer
+        self.wrong1 = wrong1
+        self.wrong2 = wrong2
+        self.wrong3 = wrong3
+
+
+# создаём вопросы, оформляем их в список
+q1 = Question('Государственный язык Бразилии', 'Португальский', 'Английский', 'Испанский', 'Бразильский')
+q2 = Question('Какого цвета нет на флаге России?', 'Зелёный', 'Белый', 'Синий', 'Красный')
+q3 = Question('Какой рукой мешают чай?', 'Ложкой', 'Левой', 'Правой', 'Двумя')
+q4 = Question('Год основания Москвы', '1147', '889', '1251', '955')
+
+question_list = [q1, q2, q3, q4]
+
+
 def show_result():
     # показать панель ответов
     RadioGroupBox.hide()
@@ -25,24 +44,49 @@ def show_question():
     RadioGroup.setExclusive(True)
 
 
-def test():
-    # временная функция, которая определяет, какой метод вызывать,
-    # в зависимости от текста на кнопке
-    if btn_ok.text() == 'Ответить':
-        show_result()
-    else:
-        show_question()
-
-
-def ask(question, right_answer, wrong1, wrong2, wrong3):
+def ask(q: Question):
+    '''записывает значения вопроса и ответов в нужные виджеты, перемешивает ответы'''
     shuffle(answers)
-    answers[0].setText(right_answer)
-    answers[1].setText(wrong1)
-    answers[2].setText(wrong2)
-    answers[3].setText(wrong3)
-    lb_question.setText(question)
-    lb_Correct.setText(right_answer)
+    answers[0].setText(q.right_answer)
+    answers[1].setText(q.wrong1)
+    answers[2].setText(q.wrong2)
+    answers[3].setText(q.wrong3)
+    lb_question.setText(q.question)
+    lb_Correct.setText(q.right_answer)
     show_question()
+
+
+def show_correct(res):
+    '''установим текст в надпись "результат" и покажем нужную панель'''
+    lb_Result.setText(res)
+    show_result()
+
+
+def check_answer():
+    """проверяет вариант ответа, показывает панель ответов"""
+    if answers[0].isChecked():
+        # правильный ответ
+        show_correct('Правильно!')
+    elif answers[1].isChecked() or answers[2].isChecked() or answers[3].isChecked():
+        show_correct('Неверно!')
+
+
+def next_question():
+    """задаёт следующий вопрос из списка"""
+    window.cur_question += 1
+    if window.cur_question >= len(question_list):
+        window.cur_question = 0  # если список вопросов кончился - идём сначала
+    q = question_list[window.cur_question]  # берём вопрос
+    ask(q)  # задаём его
+
+
+def click_OK():
+    """определяет, надо показать другой вопрос или проверить ответ на этот"""
+    if btn_ok.text() == 'Ответить':
+        check_answer()  # проверка ответа
+    else:
+        next_question()  # следующий вопрос
+
 
 # создаём приложение, главное окно
 app = QApplication([])
@@ -56,10 +100,10 @@ btn_ok = QPushButton('Ответить')
 
 # группа на экране с переключателем ответов
 RadioGroupBox = QGroupBox('Варианты ответов:')
-rbtn1 = QRadioButton('1350')
-rbtn2 = QRadioButton('1147')
-rbtn3 = QRadioButton('1861')
-rbtn4 = QRadioButton('925')
+rbtn1 = QRadioButton('Вариант 1')
+rbtn2 = QRadioButton('Вариант 2')
+rbtn3 = QRadioButton('Вариант 3')
+rbtn4 = QRadioButton('Вариант 4')
 # поместим все кнопки в список для более удобного управления
 answers = [rbtn1, rbtn2, rbtn3, rbtn4]
 
@@ -110,8 +154,11 @@ layout_line3.addStretch(1)
 layout_card.addLayout(layout_line3, stretch=1)
 layout_line3.addStretch(1)
 layout_card.setSpacing(5)  # добавить пробелы между содержимым
+
+window.cur_question = -1
 # подключим кнопку:
-btn_ok.clicked.connect(test)
+btn_ok.clicked.connect(click_OK)
+next_question()
 
 window.setLayout(layout_card)
 window.show()
