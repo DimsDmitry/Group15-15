@@ -67,16 +67,19 @@ def check_answer():
     if answers[0].isChecked():
         # правильный ответ
         show_correct('Правильно!')
+        window.score += 1
+        print(f'Статистика\nВсего вопросов:{window.total}\nПравильных ответов:{window.score}')
     elif answers[1].isChecked() or answers[2].isChecked() or answers[3].isChecked():
         show_correct('Неверно!')
+        print(f'Рейтинг: {window.score / window.total * 100}%')
 
 
 def next_question():
     """задаёт следующий вопрос из списка"""
-    window.cur_question += 1
-    if window.cur_question >= len(question_list):
-        window.cur_question = 0  # если список вопросов кончился - идём сначала
-    q = question_list[window.cur_question]  # берём вопрос
+    window.total += 1
+    print(f'Статистика\nВсего вопросов:{window.total}\nПравильных ответов:{window.score}')
+    cur_question = randint(1, len(question_list) - 1)
+    q = question_list[cur_question]  # берём вопрос
     ask(q)  # задаём его
 
 
@@ -155,7 +158,8 @@ layout_card.addLayout(layout_line3, stretch=1)
 layout_line3.addStretch(1)
 layout_card.setSpacing(5)  # добавить пробелы между содержимым
 
-window.cur_question = -1
+window.score = 0
+window.total = 0
 # подключим кнопку:
 btn_ok.clicked.connect(click_OK)
 next_question()
