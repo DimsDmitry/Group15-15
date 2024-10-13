@@ -1,2 +1,2 @@
-photo = 'Crimea.mp4'
-print(photo.endswith('.png'))
+a, b = 5, 10
+print(a * b)
