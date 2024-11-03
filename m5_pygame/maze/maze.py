@@ -53,6 +53,27 @@ class Enemy(GameSprite):
             self.rect.x += self.speed
 
 
+class Wall(sprite.Sprite):
+    """класс для стен-препятствий"""
+
+    def __init__(self, wall_color, wall_x, wall_y, wall_width, wall_height):
+        """конструктор класса"""
+        super().__init__()
+        self.wall_color = wall_color
+        self.width = wall_width
+        self.height = wall_height
+        # картинка стены - прямоугольник определённого размера и цвета
+        self.image = Surface((self.width, self.height))
+        self.image.fill(wall_color)
+        # каждый спрайт - это прямоугольник
+        self.rect = self.image.get_rect()
+        self.rect.x = wall_x
+        self.rect.y = wall_y
+
+    def draw_wall(self):
+        """нарисовать стену"""
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
 # игровая сцена
 win_width = 700
 win_height = 500
@@ -67,8 +88,13 @@ player = Player('hero.png', 5, win_height - 80, 4)
 monster = Enemy('cyborg.png', win_width - 80, 280, 2)
 final = GameSprite('treasure.png', win_width - 120, win_height - 80, 0)
 
+w1 = Wall('chartreuse3', 100, 20, 450, 10)
+w2 = Wall('chartreuse3', 100, 480, 350, 10)
+w3 = Wall('chartreuse3', 100, 20, 10, 380)
+
 # переменные для работы игрового цикла
 game = True
+finish = False
 clock = time.Clock()
 FPS = 60
 
@@ -77,19 +103,45 @@ mixer.init()
 mixer.music.load('jungles.ogg')
 mixer.music.play()
 
+money = mixer.Sound('money.ogg')
+kick = mixer.Sound('kick.ogg')
+
+# шрифты
+font.init()
+font = font.Font(None, 70)
+win = font.render('ПОБЕДА', True, 'darkgoldenrod1')
+lose = font.render('ВЫ ПРОИГРАЛИ', True, 'crimson')
+
 # игровой цикл
 while game:
     for e in event.get():
         if e.type == QUIT:
             game = False
+    if not finish:
+        window.blit(background, (0, 0))
+        player.reset()
+        monster.reset()
+        final.reset()
 
-    window.blit(background, (0, 0))
-    player.reset()
-    monster.reset()
-    final.reset()
+        w1.draw_wall()
+        w2.draw_wall()
+        w3.draw_wall()
 
-    player.move()
-    monster.move()
+        player.move()
+        monster.move()
+
+        # победа - столкновение игрока и сокровища
+        if sprite.collide_rect(player, final):
+            finish = True
+            window.blit(win, (200, 200))
+            money.play()
+
+        # поражение - столкновение игрока и противника, или игрока и любой из стен
+        if sprite.collide_rect(player, monster) or sprite.collide_rect(player, w1)\
+                or sprite.collide_rect(player, w2) or sprite.collide_rect(player, w3):
+            finish = True
+            window.blit(lose, (200, 200))
+            kick.play()
 
     display.update()
     clock.tick(FPS)
