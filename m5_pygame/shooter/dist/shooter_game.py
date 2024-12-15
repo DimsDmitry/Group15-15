@@ -1,5 +1,6 @@
 from pygame import *
 from random import randint
+from time import time as timer
 
 
 class GameSprite(sprite.Sprite):
@@ -52,6 +53,18 @@ class Enemy(GameSprite):
             lost += 1
 
 
+class Asteroid(GameSprite):
+    """класс-наследник для спрайта-астероида (перемещается автоматически вниз)"""
+
+    def update(self):
+        """перемещение автоматически - координата rect.y постоянно растёт"""
+        self.rect.y += self.speed
+        if self.rect.y > win_height:
+            # если противник достигает нижней границы экрана, lost увеличивается на 0, а противник перемещается вверх
+            self.rect.x = randint(80, win_width - 80)
+            self.rect.y = 0
+
+
 class Bullet(GameSprite):
     """класс спрайта-пули"""
 
@@ -78,13 +91,14 @@ fire_sound = mixer.Sound('fire.ogg')  # звук выстрела
 
 # шрифты
 font.init()
-font1 = font.Font(None, 80)  # объект класса "надпись" для отображения победы и поражения
-font2 = font.Font(None, 36)  # объект класса "надпись" для счётчиков кораблей
+font1 = font.SysFont('Arial', 80)  # объект класса "надпись" для отображения победы и поражения
+font2 = font.SysFont('Arial', 36)  # объект класса "надпись" для счётчиков кораблей
 
 score = 0  # сбито кораблей
 lost = 0  # пропущено кораблей
 max_lost = 3  # допустимое количество пропущенных кораблей
 goal = 30  # цель - сбить столько кораблей
+life = 3  # счётчик жизней
 
 win = font1.render('ПОБЕДА!!!', True, 'cornsilk1')  # победа
 lose = font1.render('ПОРАЖЕНИЕ', True, 'crimson')  # поражение
@@ -100,9 +114,17 @@ for i in range(5):
     monster = Enemy('ufo.png', randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
     monsters.add(monster)
 
+asteroids = sprite.Group()
+for i in range(2):
+    # создаём несколько противников, помещаем каждого в группу monsters
+    asteroid = Asteroid('asteroid.png', randint(30, win_width - 30), -40, 80, 50, randint(1, 7))
+    asteroids.add(asteroid)
+
 # переменные для игрового цикла
 finish = False
 game = True
+rel_time = False  # Флаг, показывающий, идёт ли СЕЙЧАС перезарядка
+num_fire = 0  # Счётчик выстрелов
 
 # игровой цикл
 while game:
@@ -113,8 +135,14 @@ while game:
         elif e.type == KEYDOWN:
             # нажали пробел - выстрел
             if e.key == K_SPACE:
-                fire_sound.play()
-                ship.fire()
+                if num_fire < 5 and not rel_time:
+                    num_fire += 1
+                    fire_sound.play()
+                    ship.fire()
+                if num_fire >= 5 and not rel_time:
+                    # если игрок сделал 5 выстрелов
+                    last_time = timer()  # засекаем время, когда это произошло
+                    rel_time = True  # поднимаем флаг перезарядки
 
     if not finish:
         # если finish == False, обновляем экран и включаем движение спрайтов
@@ -122,6 +150,19 @@ while game:
         ship.update()
         monsters.update()
         bullets.update()
+        asteroids.update()
+        # ПЕРЕЗАРЯДКА
+
+        if rel_time:
+            # если флаг перезарядки равен True, включаем второй таймер
+            now_time = timer()
+            if now_time - last_time < 3:
+                # пока не прошло 3 сек, выводим информацию о перезарядке
+                rel_text = font2.render('Подождите, перезарядка...', 1, 'palevioletred1')
+                window.blit(rel_text, (230, 460))
+            else:
+                num_fire = 0
+                rel_time = False
 
         # проверка столкновения пуль и монстров (и пуля, и монстр при касании исчезают)
         collides = sprite.groupcollide(monsters, bullets, True, True)
@@ -132,8 +173,15 @@ while game:
             # создаём нового противника
             monster = Enemy('ufo.png', randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
             monsters.add(monster)
-        # ПОРАЖЕНИЕ - пропустили слишком много противников или столкнулись с одним из них
-        if lost >= max_lost or sprite.spritecollide(ship, monsters, False):
+
+        # Если спрайт коснулся врага или астероида, уменьшаем жизнь
+        if sprite.spritecollide(ship, monsters, False) or sprite.spritecollide(ship, asteroids, False):
+            sprite.spritecollide(ship, monsters, True)
+            sprite.spritecollide(ship, asteroids, True)
+            life -= 1
+
+        # ПОРАЖЕНИЕ - пропустили слишком много противников или здоровье снижено до 0
+        if lost >= max_lost or life == 0:
             finish = True
             window.blit(lose, (200, 200))
 
@@ -152,6 +200,20 @@ while game:
         ship.reset()
         monsters.draw(window)
         bullets.draw(window)
+        asteroids.draw(window)
+
+        # проверяем и отрисовываем актуальное количество очков здоровья, разным цветом
+        if life == 3:
+            life_color = 'green1'
+        if life == 2:
+            life_color = 'yellow'
+        if life == 1:
+            life_color = 'red'
+        if life == 0:
+            life_color = 'red4'
+
+        text_life = font1.render(str(life), 1, life_color)
+        window.blit(text_life, (600, 20))
 
         display.update()
     else:
