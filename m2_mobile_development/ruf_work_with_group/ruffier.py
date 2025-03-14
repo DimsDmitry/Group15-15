@@ -30,7 +30,7 @@ txt_index = "Ваш индекс Руфье: "
 txt_workheart = "Работоспособность сердца: "
 txt_nodata = '''
 нет данных для такого возраста'''
-txt_res = [] 
+txt_res = []
 txt_res.append('''низкая. 
 Срочно обратитесь к врачу!''')
 txt_res.append('''удовлетворительная. 
@@ -42,25 +42,49 @@ txt_res.append('''
 txt_res.append('''
 высокая''')
 
+
 def ruffier_index(P1, P2, P3):
     ''' возвращает значение индекса по трем показателям пульса для сверки с таблицей'''
-    pass
+    return (4 * (P1 + P2 + P3) - 200) / 10
+
 
 def neud_level(age):
     ''' варианты с возрастом меньше 7 и взрослым надо обрабатывать отдельно, 
     здесь подбираем уровень "неуд" только внутри таблицы:
     в возрасте 7 лет "неуд" - это индекс 21, дальше каждые 2 года он понижается на 1.5 до значения 15 в 15-16 лет '''
-    pass
-    
+    norm_age = (min(age, 15)-7) // 2
+    result = 21 - norm_age * 1.5
+    # возвращаем минимально допустимый неудовлетворительный индекс
+    return result
+
+
 def ruffier_result(r_index, level):
     ''' функция получает индекс Руфье и интерпретирует его, 
     возвращает уровень готовности: число от 0 до 4
     (чем выше уровень готовности, тем лучше).  '''
-    pass
+    if r_index >= level:
+        return 0  # неуд
+
+    level -= 4
+    if r_index >= level:
+        return 1  # уд
+
+    level -= 5
+    if r_index >= level:
+        return 2  # средняя
+
+    level -= 5.5
+    if r_index >= level:
+        return 3  # выше среднего
+    return 4  # высокая
+
 
 def test(P1, P2, P3, age):
     ''' эту функцию можно использовать снаружи модуля для подсчетов индекса Руфье.
     Возвращает готовые тексты, которые остается нарисовать в нужном месте
     Использует для текстов константы, заданные в начале этого модуля. '''
-    pass
-
+    ruff_index = ruffier_index(P1, P2, P3)  # вызываем ф-ю ruffier_index, передаём в неё пульс
+    index = ruffier_result(ruff_index, neud_level(age))
+    result = txt_res[index]
+    final_text = txt_index + str(ruff_index) + '\n' + txt_workheart + result
+    return final_text

@@ -7,6 +7,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.scrollview import ScrollView
 
 from instructions import txt_instruction, txt_test1, txt_test2, txt_test3, txt_sits
+from ruffier import test
 
 age = 7
 name = ''
@@ -79,29 +80,86 @@ class PulseScr(Screen):
         """описывает нажатие на кнопку"""
         global p1
         # получаем переменные name, age и переключаемся на следующий экран
-        name = self.in_name.text
-        self.manager.current = 'pulse1'
+        p1 = int(self.in_result.text)
+        self.manager.current = 'sits'
 
 
 class CheckSits(Screen):
     """3-й экран, отвечает за приседания"""
 
     def __init__(self, **kwargs):
-        pass
+        super().__init__(**kwargs)
+        # виджеты экрана:
+        instr = Label(text=txt_sits)
+        self.btn = Button(text='Продолжить:', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        self.btn.on_press = self.next
+        # размещаем виджеты на линиях (лэйаутах)
+        outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
+        outer.add_widget(instr)
+        outer.add_widget(self.btn)
+        self.add_widget(outer)
+
+    def next(self):
+        """переключаемся на следующий экран"""
+        self.manager.current = 'pulse2'
 
 
 class PulseScr2(Screen):
     """4-й экран, запрашивает пульс после приседаний и после отдыха"""
 
     def __init__(self, **kwargs):
-        pass
+        super().__init__(**kwargs)
+        # виджеты экрана:
+        instr = Label(text=txt_test3)
+        lbl_result1 = Label(text='Результат:', halign='right')
+        lbl_result2 = Label(text='Результат после отдыха:', halign='right')
+
+        self.in_result1 = TextInput(text='0', multiline=False)
+        self.in_result2 = TextInput(text='0', multiline=False)
+
+        self.btn = Button(text='Продолжить:', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        self.btn.on_press = self.next
+        # размещаем виджеты на линиях (лэйаутах)
+        line1 = BoxLayout(size_hint=(0.8, None), height='30sp')
+        line1.add_widget(lbl_result1)
+        line1.add_widget(self.in_result1)
+
+        line2 = BoxLayout(size_hint=(0.8, None), height='30sp')
+        line2.add_widget(lbl_result2)
+        line2.add_widget(self.in_result2)
+        # главный вертикальный лэйаут
+        outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
+        outer.add_widget(instr)
+        outer.add_widget(line1)
+        outer.add_widget(line2)
+        outer.add_widget(self.btn)
+        # добавляем главный лэйаут на экран
+        self.add_widget(outer)
+
+    def next(self):
+        """описывает нажатие на кнопку"""
+        global p2, p3
+        # получаем переменные p2, p3 и переключаемся на следующий экран
+        p2 = int(self.in_result1.text)
+        p3 = int(self.in_result2.text)
+        self.manager.current = 'result'
 
 
 class Result(Screen):
     """5-й экран, выводит результат тестирования"""
 
     def __init__(self, **kwargs):
-        pass
+        super().__init__(**kwargs)
+        self.outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
+        self.instr = Label(text='')
+        self.outer.add_widget(self.instr)
+        self.add_widget(self.outer)
+        # при открытии экрана вызываем метод self.before
+        self.on_enter = self.before
+
+    def before(self):
+        """вызывает функцию для подсчёта индекса Руфье и выводит результат"""
+        self.instr.text = name + '\n' + test(p1, p2, p3, age)
 
 
 class HeartCheck(App):
