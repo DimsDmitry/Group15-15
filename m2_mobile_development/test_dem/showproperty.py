@@ -11,14 +11,17 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import StringProperty
 
+
 class MyInput(TextInput):
     mytext = StringProperty()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(text=self.changevalue)
-    
+
     def changevalue(self, widget, value):
         self.mytext = "".join(reversed(self.text))
+
 
 class MyBox(BoxLayout):
     def __init__(self, **kwargs):
@@ -31,6 +34,7 @@ class MyBox(BoxLayout):
 
     def textchanged(self, widget, value):
         self.label.text = "Что? " + value + " ?"
+
 
 class MyApp(App):
     def build(self):

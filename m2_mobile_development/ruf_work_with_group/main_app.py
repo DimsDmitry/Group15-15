@@ -8,11 +8,20 @@ from kivy.uix.scrollview import ScrollView
 
 from instructions import txt_instruction, txt_test1, txt_test2, txt_test3, txt_sits
 from ruffier import test
+from seconds import Seconds
 
 age = 7
 name = ''
 
 p1, p2, p3 = 0, 0, 0
+
+
+def check_int(str_num):
+    """возвращает число или False, если строка не конвертируется в число"""
+    try:
+        return int(str_num)
+    except ValueError:
+        return False
 
 
 class InstrScreen(Screen):
@@ -50,7 +59,14 @@ class InstrScreen(Screen):
         global name, age
         # получаем переменные name, age и переключаемся на следующий экран
         name = self.in_name.text
-        self.manager.current = 'pulse1'
+        age = check_int(self.in_age.text)
+        if not age or age < 7:
+            # проверяем, ввели ли мы возраст верно - это должно быть число не меньше 7
+            age = 7
+            self.in_age.text = str(age)
+        else:
+            # если ввели верно - переход на след. экран
+            self.manager.current = 'pulse1'
 
 
 class PulseScr(Screen):
@@ -60,8 +76,14 @@ class PulseScr(Screen):
         super().__init__(**kwargs)
         # виджеты экрана:
         instr = Label(text=txt_test1)
+        # таймер, привязка к логическому свойству
+        self.lbl_sec = Seconds(15)
+        self.lbl_sec.bind(done=self.sec_finished)
+        # кнопки, окна для ввода текста
         lbl_result = Label(text='Введите результат:', halign='right')
         self.in_result = TextInput(text='0', multiline=False)
+        # выключим окно для ввода текста пока не прошел таймер
+        self.in_result.set_disabled(True)
         self.btn = Button(text='Продолжить:', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
         self.btn.on_press = self.next
         # размещаем виджеты на линиях (лэйаутах)
@@ -79,9 +101,15 @@ class PulseScr(Screen):
     def next(self):
         """описывает нажатие на кнопку"""
         global p1
-        # получаем переменные name, age и переключаемся на следующий экран
-        p1 = int(self.in_result.text)
-        self.manager.current = 'sits'
+        # получаем переменную p1
+        p1 = check_int(self.in_result.text)
+        if not p1 or p1 <= 0:
+            # проверяем, ввели ли мы пульс верно - это должно быть число больше 0
+            p1 = 0
+            self.in_result.text = str(p1)
+        else:
+            # если ввели верно - переход на след. экран
+            self.manager.current = 'sits'
 
 
 class CheckSits(Screen):
@@ -139,10 +167,19 @@ class PulseScr2(Screen):
     def next(self):
         """описывает нажатие на кнопку"""
         global p2, p3
-        # получаем переменные p2, p3 и переключаемся на следующий экран
-        p2 = int(self.in_result1.text)
-        p3 = int(self.in_result2.text)
-        self.manager.current = 'result'
+        # получаем переменные p2, p3, проверяем чтобы они были числом больше 0
+        # и переключаемся на следующий экран
+        p2 = check_int(self.in_result1.text)
+        p3 = check_int(self.in_result2.text)
+        if not p2:
+            p2 = 0
+            self.in_result1.text = str(p2)
+        elif not p3:
+            p3 = 0
+            self.in_result2.text = str(p3)
+        else:
+            # если ввели верно - переход на след. экран
+            self.manager.current = 'result'
 
 
 class Result(Screen):
