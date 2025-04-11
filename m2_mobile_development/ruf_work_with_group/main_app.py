@@ -5,16 +5,21 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.scrollview import ScrollView
+from kivy.core.window import Window
 
 from instructions import txt_instruction, txt_test1, txt_test2, txt_test3, txt_sits
 from ruffier import test
 from seconds import Seconds
+from sits import Sits
 
 age = 7
 name = ''
 
 p1, p2, p3 = 0, 0, 0
 
+win_color = (0.6, 0.18, 0.75, 0.8)
+Window.clearcolor = win_color  # Назначаем цвет экрана.
+btn_color = (0.89, 0.2, 0.54, 1)  # Цвет кнопки. Применим отдельно к каждой кнопке
 
 def check_int(str_num):
     """возвращает число или False, если строка не конвертируется в число"""
@@ -36,6 +41,7 @@ class InstrScreen(Screen):
         self.in_name = TextInput(multiline=False)
         self.in_age = TextInput(text='7', multiline=False)
         self.btn = Button(text='Начать:', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        self.btn.background_color = btn_color  # Цвет кнопки.
         # привязываем к кнопке метод, переключающий на след. экран
         self.btn.on_press = self.next
         # размещаем виджеты на линиях (лэйаутах)
@@ -86,6 +92,8 @@ class PulseScr(Screen):
         # выключим окно для ввода текста пока не прошел таймер
         self.in_result.set_disabled(True)
         self.btn = Button(text='Начать', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        self.btn.background_color = btn_color  # Цвет кнопки.
+
         self.btn.on_press = self.next
         # размещаем виджеты на линиях (лэйаутах)
         line = BoxLayout(size_hint=(0.8, None), height='30sp')
@@ -134,10 +142,13 @@ class CheckSits(Screen):
         super().__init__(**kwargs)
         # виджеты экрана:
         instr = Label(text=txt_sits)
+        self.lbl_sits = Sits(30)  # счётчик приседаний
         self.btn = Button(text='Продолжить:', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        self.btn.background_color = btn_color  # Цвет кнопки.
         self.btn.on_press = self.next
         # размещаем виджеты на линиях (лэйаутах)
         outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
+        outer.add_widget(self.lbl_sits)
         outer.add_widget(instr)
         outer.add_widget(self.btn)
         self.add_widget(outer)
@@ -168,6 +179,7 @@ class PulseScr2(Screen):
         self.in_result2.set_disabled(True)
 
         self.btn = Button(text='Начать:', size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        self.btn.background_color = btn_color  # Цвет кнопки.
         self.btn.on_press = self.next
         # размещаем виджеты на линиях (лэйаутах)
         line1 = BoxLayout(size_hint=(0.8, None), height='30sp')

@@ -12,6 +12,7 @@ class Seconds(Label):
         self.total = total
         my_text = 'Прошло секунд: ' + str(self.current)
         super().__init__(text=my_text)
+        # self.color = (227, 52, 137)
 
     def restart(self, total, **kwargs):
         self.done = False
